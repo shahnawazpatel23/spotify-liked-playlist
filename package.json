@@ -10,9 +10,8 @@
   },
   "name": "spotify",
   "version": "1.0.0",
-  
   "scripts": {
-    "dev": "vercel dev"  
+    "dev": "vercel dev"
   },
   "author": "",
   "license": "ISC",
