@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>playlist</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Ensure the body takes up full viewport height */
+        margin: 0;
+        background-color: #f4f4f4;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+        margin: auto;
+        box-sizing: border-box;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #1db954;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #1ed760;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 600px) {
+        form {
+          width: 80%; /* Adjust form width for small screens */
+          padding: 15px;
+          margin: auto;
+        }
+        input[type="text"],
+        button {
+          font-size: 16px; /* Maintain font size on small devices */
+        }
+      }
+
+      @media (max-width: 400px) {
+        form {
+          width: 70%; /* Adjust form width for very small screens */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <form action="/login" method="GET">
+        <label for="name">Enter Playlist Name:</label>
+        <input type="text" id="name" name="name" placeholder="Playlist Name" required>
+        <button type="submit">Create Playlist</button>
+    </form> -->
+    <div>
+      <h2>Convert your liked songs of spotify into a playlist</h2>
+      <button id="button">Start</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('button').addEventListener('click', function() {
+                window.location.href = '/login';  // Redirects to /login when the button is clicked
+            });
+        });
+    </script>
+  </body>
+</html>

@@ -1,215 +1,116 @@
-const express = require('express');
-const request = require('request'); 
-const querystring = require('querystring');
-const SpotifyWebApi = require('spotify-web-api-node'); 
-const axios = require('axios');
-const dotenv = require('dotenv').config();
+const express = require("express");
+const request = require("request");
+const querystring = require("querystring");
+const SpotifyWebApi = require("spotify-web-api-node");
+const axios = require("axios");
+const dotenv = require("dotenv").config();
 const app = express();
+const path = require("path");
 
 // Spotify API credentials
-const clientId = process.env.CLIENT_ID
-const clientSecret = process.env.CLIENT_SECRET
-const redirectUri = 'http://localhost:8888/callback'; 
+const clientId = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
+const redirectUri = "http://localhost:8888/callback";
 
 const spotifyApi = new SpotifyWebApi({
-    clientId: clientId,
-    clientSecret: clientSecret,
-    redirectUri: redirectUri,
+  clientId: clientId,
+  clientSecret: clientSecret,
+  redirectUri: redirectUri,
 });
 
-const scopes = ['user-library-read', 'playlist-modify-public', 'playlist-modify-private'];
+const scopes = [
+  "user-library-read",
+  "playlist-modify-public",
+  "playlist-modify-private",
+];
 
-app.get('/login', (req, res) => {
-    const authorizeURL = spotifyApi.createAuthorizeURL(scopes);
-    res.redirect(authorizeURL);
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.get('/callback', async (req, res) => {
-    const code = req.query.code;  // Ensure the code is being captured from query params
-    console.log("code in callback is ", code)
-    if (!code) {
-        return res.status(400).send('Authorization code not found.');
-    }
-
-    try {
-        const data = await spotifyApi.authorizationCodeGrant(code);
-        const accessToken = data.body['access_token'];
-        const refreshToken = data.body['refresh_token'];
-
-        spotifyApi.setAccessToken(accessToken);
-        spotifyApi.setRefreshToken(refreshToken);
-
-        res.redirect('/playlist-form');
-    } catch (err) {
-        console.error('Error getting access token:', err);
-        res.send('Failed to get access token.');
-    }
-});
-app.get('/playlist-form', (req, res) => {
-    res.send(`
-        <html>
-            <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        min-height: 100vh; /* Ensure the body takes up full viewport height */
-                        margin: 0;
-                        background-color: #f4f4f4;
-                    }
-                    
-                    form {
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                        background-color: #fff;
-                        padding: 20px;
-                        border-radius: 10px;
-                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                        max-width: 400px;
-                        width: 100%;
-                        margin: auto;
-                        box-sizing: border-box;
-                    }
-                    label {
-                        display: block;
-                        margin-bottom: 10px;
-                        font-weight: bold;
-                    }
-                    input[type="text"] {
-                        width: 100%;
-                        padding: 10px;
-                        margin-bottom: 20px;
-                        border: 1px solid #ccc;
-                        border-radius: 5px;
-                        font-size: 16px;
-                    }
-                    button {
-                        width: 100%;
-                        padding: 10px;
-                        background-color: #1DB954;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                        font-size: 16px;
-                        cursor: pointer;
-                    }
-                    button:hover {
-                        background-color: #1ed760;
-                    }
-
-                    /* Responsive Design */
-                    @media (max-width: 600px) {
-                        form {
-                            width: 80%; /* Adjust form width for small screens */
-                            padding: 15px;
-                            margin: auto;
-                        }
-                        input[type="text"], button {
-                            font-size: 16px; /* Maintain font size on small devices */
-                        }
-                    }
-
-                    @media (max-width: 400px) {
-                        form {
-                            width: 70%; /* Adjust form width for very small screens */
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-            
-                <form action="/create-playlist" method="GET">
-                    <label for="name">Enter playlist name:</label>
-                    <input type="text" id="name" name="name" placeholder="Playlist Name">
-                    <button type="submit">Create Playlist</button>
-                </form>
-                
-            </body>
-        </html>
-    `);
+app.get("/login", (req, res) => {
+  const authorizeURL = spotifyApi.createAuthorizeURL(scopes);
+  res.redirect(authorizeURL);
 });
 
-
-
-
-// app.get('/create-playlist', async (req, res) => {
-//     try {
-//         // Fetch liked songs
-//         const likedTracks = await spotifyApi.getMySavedTracks({ limit: 50 });
-//         const trackUris = likedTracks.body.items.map(item => item.track.uri);
-//         console.log('tracked --->', trackUris);
-
-//         // Get user information
-//         const user = await spotifyApi.getMe();
-//         console.log("user is ", user);
-        
-
-//         // Create a new playlist using axios
-//         const playlist = await axios.post(
-//             `https://api.spotify.com/v1/users/${user.body.id}/playlists`,
-//             {
-//                 name: 'Liked Songs Playlist',
-//                 public: false
-//             },
-//             {
-//                 headers: {
-//                     Authorization: `Bearer ${spotifyApi.getAccessToken()}`,
-//                     'Content-Type': 'application/json',
-//                 }
-//             }
-//         );
-        
-
-//         console.log("created playlist is ", playlist.data);
-
-//         // Add tracks to the playlist
-//         await spotifyApi.addTracksToPlaylist(playlist.data.id, trackUris);
-
-//         res.send(`Playlist created! View it <a href="${playlist.data.external_urls.spotify}">here</a>`);
-//     } catch (err) {
-//         console.error('Error creating playlist:', err);
-//         res.send('Failed to create playlist');
-//     }
+// app.get('/login', (req, res) => {
+//     const playlistName = req.query.name; // Capture the playlist name from the form
+//     const authorizeURL = spotifyApi.createAuthorizeURL(scopes) + '&playlist_name=' + playlistName;
+//     res.redirect(authorizeURL);
 // });
 
-app.get('/create-playlist', async (req, res) => {
-    try {
-        // Get the playlist name from the query params
-        const playlistName = req.query.name || 'Liked Songs Playlist'; 
+app.get("/callback", async (req, res) => {
+  const code = req.query.code; // Ensure the code is being captured from query params
+  console.log("code in callback is ", code);
+  if (!code) {
+    return res.status(400).send("Authorization code not found.");
+  }
 
-        // Fetch liked songs
-        const likedTracks = await spotifyApi.getMySavedTracks({ limit: 50 });
-        const trackUris = likedTracks.body.items.map(item => item.track.uri);
-        console.log('tracked --->', trackUris);
+  try {
+    const data = await spotifyApi.authorizationCodeGrant(code);
+    const accessToken = data.body["access_token"];
+    const refreshToken = data.body["refresh_token"];
 
-        // Get user information
-        const user = await spotifyApi.getMe();
-        console.log("user is ", user);
+    spotifyApi.setAccessToken(accessToken);
+    spotifyApi.setRefreshToken(refreshToken);
 
-        // Create a new playlist using axios with user-provided name
-        const playlist = await axios.post(
-            `https://api.spotify.com/v1/users/${user.body.id}/playlists`,
-            {
-                name: playlistName,  // Use the playlist name from the query
-                public: false
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${spotifyApi.getAccessToken()}`,
-                    'Content-Type': 'application/json',
-                }
-            }
-        );
+    res.redirect("/create-playlist");
+  } catch (err) {
+    console.error("Error getting access token:", err);
+    res.send("Failed to get access token.");
+  }
+});
 
-        console.log("created playlist is ", playlist.data);
+app.get("/create-playlist", async (req, res) => {
+  try {
+    // Get the playlist name from the query params
+    const playlistName = req.query.name || "Liked Songs Playlist";
 
-        // Add tracks to the playlist
-        await spotifyApi.addTracksToPlaylist(playlist.data.id, trackUris);
+    // Fetch liked songs
+    // const likedTracks = await spotifyApi.getMySavedTracks({ limit: 50 });
+    // const trackUris = likedTracks.body.items.map(item => item.track.uri);
+    // console.log('tracked --->', trackUris);
 
-        res.send(`
+    let trackUris = [];
+    let offset = 0;
+    let limit = 50;
+    let total = 1; // Set initially to enter the loop
+
+    // Loop to fetch all liked tracks in batches of 50
+    while (trackUris.length < total) {
+      const likedTracks = await spotifyApi.getMySavedTracks({ limit, offset });
+      trackUris.push(...likedTracks.body.items.map((item) => item.track.uri));
+      total = likedTracks.body.total; // Total number of liked tracks
+      offset += limit; // Move to the next set of tracks
+    }
+
+    console.log(`Fetched ${trackUris.length} liked tracks in total.`);
+
+    // Get user information
+    const user = await spotifyApi.getMe();
+    console.log("user is ", user);
+
+    // Create a new playlist using axios with user-provided name
+    const playlist = await axios.post(
+      `https://api.spotify.com/v1/users/${user.body.id}/playlists`,
+      {
+        name: playlistName, // Use the playlist name from the query
+        public: false,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${spotifyApi.getAccessToken()}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("created playlist is ", playlist.data);
+
+    // Add tracks to the playlist
+    await spotifyApi.addTracksToPlaylist(playlist.data.id, trackUris);
+
+    res.send(`
             <html>
                 <head>
                     <title>Playlist Created</title>
@@ -260,14 +161,12 @@ app.get('/create-playlist', async (req, res) => {
                 </body>
             </html>
         `);
-        
-    } catch (err) {
-        console.error('Error creating playlist:', err);
-        res.send('Failed to create playlist');
-    }
+  } catch (err) {
+    console.error("Error creating playlist:", err);
+    res.send("Failed to create playlist");
+  }
 });
 
-
 app.listen(process.env.PORT, () => {
-    console.log(`app is running at port ${process.env.PORT}`);
+  console.log(`app is running at port ${process.env.PORT}`);
 });
