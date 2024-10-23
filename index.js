@@ -10,7 +10,7 @@ const path = require("path");
 // Spotify API credentials
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
-const redirectUri = "http://localhost:8888/callback";
+const redirectUri = "https://spotify-liked-playlist-iota.vercel.app/callback";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: clientId,
