@@ -6,7 +6,7 @@ export default function handler(req, res) {
   const spotifyApi = new SpotifyWebApi({
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    redirectUri: "https://spotify-liked-playlist-iota.vercel.app/api/callback",
+    redirectUri: "https://spotify-liked-playlist-nu.vercel.app/api/callback",
   });
 
   const authorizeURL = spotifyApi.createAuthorizeURL(scopes);
