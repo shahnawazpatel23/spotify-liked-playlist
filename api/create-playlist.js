@@ -3,12 +3,20 @@ const axios = require("axios");
 
 export default async function handler(req, res) {
   const playlistName = req.query.name || "Liked Songs Playlist";
+  const accessToken = req.query.accessToken; // Access token passed from the previous step
+
+  if (!accessToken) {
+    return res.status(401).send("Access token is missing");
+  }
 
   const spotifyApi = new SpotifyWebApi({
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     redirectUri: "https://spotify-liked-playlist-nu.vercel.app/api/callback",
   });
+
+  // Set the access token
+  spotifyApi.setAccessToken(accessToken);
 
   try {
     let trackUris = [];
@@ -51,6 +59,6 @@ export default async function handler(req, res) {
     `);
   } catch (err) {
     console.error("Error creating playlist:", err);
-    res.send("Failed to create playlist");
+    res.status(500).send("Failed to create playlist");
   }
 }
