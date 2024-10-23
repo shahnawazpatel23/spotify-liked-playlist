@@ -1,9 +1,13 @@
 {
-    "rewrites": [
-      { "source": "/", "destination": "/public/index.html" },
-      { "source": "/api/login", "destination": "/api/login" },
-      { "source": "/api/callback", "destination": "/api/callback" },
-      { "source": "/api/create-playlist", "destination": "/api/create-playlist" }
-    ]
+  "routes": [
+    { "src": "/", "dest": "/public/index.html" }, 
+    { "src": "/api/login", "dest": "/api/login" }, 
+    { "src": "/api/callback", "dest": "/api/callback" }, 
+    { "src": "/api/create-playlist", "dest": "/api/create-playlist" }
+  ],
+  "functions": {
+    "api/*": {
+      "maxDuration": 10
+    }
   }
-  
+}
