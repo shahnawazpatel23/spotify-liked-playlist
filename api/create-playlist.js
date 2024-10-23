@@ -1,47 +1,40 @@
-const SpotifyWebApi = require("spotify-web-api-node");
-const axios = require("axios");
+import SpotifyWebApi from "spotify-web-api-node";
+import axios from "axios";
 
 export default async function handler(req, res) {
+  const playlistName =  "Liked Songs Playlist";
+
+  const spotifyApi = new SpotifyWebApi({
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    redirectUri: "https://spotify-liked-playlist-nu.vercel.app/api/callback",
+  });
+
+  // Assuming you set the access token after the callback
+  // If you have a persistent store or session, retrieve it here
+  const accessToken = req.headers['authorization']; // Or however you are storing/retrieving it
+
+  if (!accessToken) {
+    return res.status(401).send("Access token not found.");
+  }
+
+  spotifyApi.setAccessToken(accessToken);
+
   try {
-    const playlistName = req.query.name || "Liked Songs Playlist";
-    const accessToken = req.query.accessToken;
-
-    if (!accessToken) {
-      console.error("Access token is missing");
-      return res.status(401).send("Access token is missing");
-    }
-
-    const spotifyApi = new SpotifyWebApi({
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      redirectUri: "https://spotify-liked-playlist-nu.vercel.app/api/callback",
-    });
-
-    // Set the access token
-    spotifyApi.setAccessToken(accessToken);
-
-    // Logging access token for debugging (Be careful to remove in production)
-    console.log("Access token:", accessToken);
-
     let trackUris = [];
     let offset = 0;
     let limit = 50;
     let total = 1;
 
-    // Fetch liked tracks
     while (trackUris.length < total) {
       const likedTracks = await spotifyApi.getMySavedTracks({ limit, offset });
       trackUris.push(...likedTracks.body.items.map((item) => item.track.uri));
       total = likedTracks.body.total;
       offset += limit;
-
-      console.log(`Fetched ${trackUris.length} liked tracks so far.`);
     }
 
     const user = await spotifyApi.getMe();
-    console.log("User ID:", user.body.id);
 
-    // Create a new playlist
     const playlist = await axios.post(
       `https://api.spotify.com/v1/users/${user.body.id}/playlists`,
       {
@@ -56,12 +49,7 @@ export default async function handler(req, res) {
       }
     );
 
-    console.log("Created playlist:", playlist.data.id);
-
-    // Add tracks to the playlist
     await spotifyApi.addTracksToPlaylist(playlist.data.id, trackUris);
-
-    console.log(`Added ${trackUris.length} tracks to the playlist`);
 
     res.send(`
       <html>
@@ -73,6 +61,6 @@ export default async function handler(req, res) {
     `);
   } catch (err) {
     console.error("Error creating playlist:", err);
-    res.status(500).send("Failed to create playlist");
+    res.send("Failed to create playlist");
   }
 }

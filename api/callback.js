@@ -1,7 +1,11 @@
-const SpotifyWebApi = require("spotify-web-api-node");
+import SpotifyWebApi from "spotify-web-api-node";
 
 export default async function handler(req, res) {
-  const code = req.query.code;
+  const code = req.query.code; // Ensure the code is being captured from query params
+
+  if (!code) {
+    return res.status(400).send("Authorization code not found.");
+  }
 
   const spotifyApi = new SpotifyWebApi({
     clientId: process.env.CLIENT_ID,
@@ -10,19 +14,19 @@ export default async function handler(req, res) {
   });
 
   try {
-    
+    // Retrieve access and refresh token
     const data = await spotifyApi.authorizationCodeGrant(code);
     const accessToken = data.body["access_token"];
     const refreshToken = data.body["refresh_token"];
 
-   
+    // Set the access token and refresh token
     spotifyApi.setAccessToken(accessToken);
     spotifyApi.setRefreshToken(refreshToken);
 
-    
-    res.redirect(`/api/create-playlist?accessToken=${accessToken}`);
+    // Redirect to create playlist
+    res.redirect(`/api/create-playlist`);
   } catch (err) {
-    console.error("Error during authorization code grant:", err);
-    res.status(500).send("Failed to authenticate");
+    console.error("Error getting access token:", err);
+    res.send("Failed to get access token.");
   }
 }
